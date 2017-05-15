@@ -1,0 +1,94 @@
+#%RAML 1.0
+title: Apointment administration REST Services API
+version: v1
+baseUri: http://apointment-administration.com/api/{version}
+mediaType: application/json
+securedBy: basicAuth
+protocols:
+  - HTTP
+  - HTTPS
+securitySchemes:
+  basicAuth:
+    description: |
+      Each request must contain the headers necessary for
+      basic authentication
+    type: Basic Authentication
+    describedBy:
+      headers:
+        Authorization:
+          description: |
+            Used to send the Base64 encoded "username:password"
+            credentials
+            type: string
+      responses:
+        401:
+          description: |
+            Unauthorized. Either the provided username and password
+            combination is invalid, or the user is not allowed to
+            access the content provided by the requested URL.
+types:
+  Apointment:  !include types/Apointment.raml
+  Error:  !include types/Error.raml
+resourceTypes:
+  collection:
+    usage: Use this resourceType to represent a collection of items
+    description: A collection of <<resourcePathName|!uppercamelcase>>
+    get:
+      description: |
+        Get all <<resourcePathName|!uppercamelcase>>,
+        optionally filtered
+      is: [ hasResponseCollection: { typeName: <<typeName>> } ]
+    post:
+      description: |
+        Create a new <<resourcePathName|!uppercamelcase|!singularize>>
+      is: [ hasRequestItem: { typeName: <<typeName>> } ]
+  item:
+    usage: Use this resourceType to represent any single item
+    description: A single <<typeName>>
+    get:
+      description: Get a <<typeName>>
+      is: [ hasResponseItem: { typeName: <<typeName>> }, hasNotFound ]
+    put:
+      description: Update a <<typeName>>
+      is: [ hasRequestItem: { typeName: <<typeName>> }, hasResponseItem: { typeName: <<typeName>> }, hasNotFound ]
+    delete:
+      description: Delete a <<typeName>>
+      is: [ hasNotFound ]
+      responses:
+        204:
+traits:
+  hasRequestItem:
+    body:
+      application/json:
+        type: <<typeName>>
+  hasResponseItem:
+    responses:
+      200:
+        body:
+          application/json:
+            type: <<typeName>>
+  hasResponseCollection:
+    responses:
+      200:
+        body:
+          application/json:
+            type: <<typeName>>[]
+  hasNotFound:
+    responses:
+      404:
+        body:
+          application/json:
+            type: Error
+            example: !include examples/Error.json
+/apointments:
+  type: { collection: { typeName: Apointment } }
+  get:
+    queryParameters:
+      name?: string
+      ownerName?: string
+  /{apointmentId}:
+    type: { item: { typeName: Apointment } }
+  /name/{name}:
+    get:
+      description: List all apointments with a certain name
+      is: [ hasResponseCollection: { typeName: Apointment } ]
