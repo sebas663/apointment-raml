@@ -84,11 +84,11 @@ traits:
   type: { collection: { typeName: Apointment } }
   get:
     queryParameters:
-      name?: string
-      ownerName?: string
+      id_patient?: integer
+      id_turn_diary?: integer
   /{apointmentId}:
     type: { item: { typeName: Apointment } }
-  /name/{name}:
-    get:
-      description: List all apointments with a certain name
-      is: [ hasResponseCollection: { typeName: Apointment } ]
+  #/name/{name}:
+  #  get:
+  #    description: List all apointments with a certain name
+  #    is: [ hasResponseCollection: { typeName: Apointment } ]
